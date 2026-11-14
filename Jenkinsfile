@@ -4,6 +4,16 @@ pipeline {
 
     stages {
 
+        stage('Check Python') {
+
+            steps {
+
+                sh 'python3 --version'
+
+            }
+
+        }
+
         stage('Create Virtual Environment') {
 
             steps {
