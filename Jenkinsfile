@@ -1,11 +1,8 @@
 pipeline {
 
-
     agent any
 
-
     stages {
-
 
         stage('Create Virtual Environment') {
             steps {
@@ -16,7 +13,6 @@ pipeline {
             }
         }
 
-
         stage('Install Dependencies') {
             steps {
                 sh '''
@@ -26,24 +22,25 @@ pipeline {
             }
         }
 
-
-        stage('Run Flask Application') {
+        stage('Application Test') {
             steps {
                 sh '''
-                    ./venv/bin/python app.py 
+                    ./venv/bin/python app.py &
+                    sleep 5
+
+                    curl http://localhost:5000/health
+
+                    pkill -f app.py
                 '''
             }
         }
 
-
     }
-
 
     post {
         success {
-            echo 'Flask application started successfully!'
+            echo 'Flask application tested successfully!'
         }
-
 
         failure {
             echo 'Pipeline execution failed!'
