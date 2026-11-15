@@ -25,16 +25,26 @@ pipeline {
         stage('Application Test') {
             steps {
                 sh '''
-                    ./venv/bin/python app.py &
+                    # Stop any old Flask process
+                    pkill -f app.py || true
+
+                    # Start Flask in background
+                    ./venv/bin/python app.py > flask.log 2>&1 &
+
+                    # Wait for startup
                     sleep 5
 
+                    # Test Health Endpoint
                     curl http://localhost:5000/health
 
-                    pkill -f app.py
+                    # Test Employees Endpoint
+                    curl http://localhost:5000/employees
+
+                    # Stop Flask after testing
+                    pkill -f app.py || true
                 '''
             }
         }
-
     }
 
     post {
@@ -44,6 +54,10 @@ pipeline {
 
         failure {
             echo 'Pipeline execution failed!'
+        }
+
+        always {
+            sh 'pkill -f app.py || true'
         }
     }
 }
